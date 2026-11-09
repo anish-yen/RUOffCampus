@@ -17,7 +17,7 @@ const FAVORITES_STORAGE_KEY = 'sublet_favorites';
 type AppContextShape = {
   listings: Listing[];
   loading: boolean;
-  usingFallback: boolean;
+  loadError: boolean;
   favoriteIds: Set<string>;
   authMessage: string;
   userId: string | null;
@@ -34,7 +34,7 @@ const AppContext = createContext<AppContextShape | null>(null);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usingFallback, setUsingFallback] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -83,7 +83,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     const next = await fetchListings();
     setListings(next.listings);
-    setUsingFallback(next.usingFallback);
+    setLoadError(next.loadError);
     setLoading(false);
   }, []);
 
@@ -214,7 +214,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     () => ({
       listings,
       loading,
-      usingFallback,
+      loadError,
       favoriteIds,
       authMessage,
       userId,
@@ -228,7 +228,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [
       listings,
       loading,
-      usingFallback,
+      loadError,
       favoriteIds,
       authMessage,
       userId,
