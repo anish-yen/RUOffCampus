@@ -2,33 +2,6 @@ import { Listing } from '@/src/types/listing';
 
 const DEFAULT_API_URL = 'https://sublet-matching-api.onrender.com';
 
-const FALLBACK_LISTINGS: Listing[] = [
-  {
-    id: 'fallback-1',
-    title: 'Sunny Room Near College Ave',
-    description: 'Quick walk to campus buses and downtown New Brunswick.',
-    price: 850,
-    beds: 1,
-    propertyType: 'Room',
-    distance: 0.4,
-    image_url: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688',
-    campus_location: 'College Ave',
-    host_id: null,
-  },
-  {
-    id: 'fallback-2',
-    title: 'Modern 2BR by Livingston',
-    description: 'Furnished apartment with laundry and parking options.',
-    price: 1650,
-    beds: 2,
-    propertyType: 'Apartment',
-    distance: 0.7,
-    image_url: 'https://images.unsplash.com/photo-1484154218962-a197022b5858',
-    campus_location: 'Livingston',
-    host_id: null,
-  },
-];
-
 export function getApiBaseUrl() {
   return process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '') ?? DEFAULT_API_URL;
 }
@@ -55,7 +28,7 @@ function normalizeListing(item: any): Listing {
   };
 }
 
-export async function fetchListings(): Promise<{ listings: Listing[]; usingFallback: boolean }> {
+export async function fetchListings(): Promise<{ listings: Listing[]; loadError: boolean }> {
   try {
     const response = await fetch(`${getApiBaseUrl()}/listings`);
     const data = await response.json();
@@ -65,12 +38,12 @@ export async function fetchListings(): Promise<{ listings: Listing[]; usingFallb
 
     return {
       listings: data.map(normalizeListing),
-      usingFallback: false,
+      loadError: false,
     };
   } catch {
     return {
-      listings: FALLBACK_LISTINGS,
-      usingFallback: true,
+      listings: [],
+      loadError: true,
     };
   }
 }
