@@ -5,6 +5,7 @@ import {
   buildListingShareMessage,
   buildListingShareUrl,
   shareListingLink,
+  buildListingDeepLinkTarget,
   WEB_BASE_URL,
 } from './share.ts';
 
@@ -46,5 +47,18 @@ describe('shareListingLink', () => {
       throw new Error('share sheet unavailable');
     });
     assert.deepEqual(result, { shared: false, fallbackUrl: 'https://ruoffcampus.vercel.app/listings/9' });
+  });
+});
+
+describe('buildListingDeepLinkTarget', () => {
+  it('maps share-link ids onto the native detail route', () => {
+    assert.deepEqual(buildListingDeepLinkTarget('mock-1'), {
+      pathname: '/listing/[id]',
+      params: { id: 'mock-1' },
+    });
+  });
+
+  it('stringifies numeric ids', () => {
+    assert.deepEqual(buildListingDeepLinkTarget(42).params, { id: '42' });
   });
 });
