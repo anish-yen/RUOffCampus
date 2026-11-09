@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { buildListingShareMessage, buildListingShareUrl, WEB_BASE_URL } from './share.ts';
+import {
+  buildListingShareMessage,
+  buildListingShareUrl,
+  shareListingLink,
+  WEB_BASE_URL,
+} from './share.ts';
 
 describe('buildListingShareUrl', () => {
   it('points at the web listing route', () => {
@@ -22,5 +27,24 @@ describe('buildListingShareMessage', () => {
     const message = buildListingShareMessage({ id: '7', title: 'Sunny 2BR near College Ave' });
     assert.ok(message.startsWith('Sunny 2BR near College Ave'));
     assert.ok(message.endsWith('https://ruoffcampus.vercel.app/listings/7'));
+  });
+});
+
+describe('shareListingLink', () => {
+  it('passes the title and link to the native share sheet', async () => {
+    const calls: { message: string }[] = [];
+    const result = await shareListingLink({ id: '7', title: 'Sunny 2BR' }, async (content) => {
+      calls.push(content);
+    });
+    assert.deepEqual(result, { shared: true });
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].message, 'Sunny 2BR - https://ruoffcampus.vercel.app/listings/7');
+  });
+
+  it('returns the fallback URL when native share fails', async () => {
+    const result = await shareListingLink({ id: '9', title: 'Loft' }, async () => {
+      throw new Error('share sheet unavailable');
+    });
+    assert.deepEqual(result, { shared: false, fallbackUrl: 'https://ruoffcampus.vercel.app/listings/9' });
   });
 });
