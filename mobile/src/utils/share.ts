@@ -22,3 +22,10 @@ export async function shareListingLink(
     return { shared: false, fallbackUrl: buildListingShareUrl(listing.id) };
   }
 }
+
+export type ListingDeepLinkTarget = { pathname: '/listing/[id]'; params: { id: string } };
+
+// Native target for inbound plural /listings/<id> share links.
+export function buildListingDeepLinkTarget(id: string | number): ListingDeepLinkTarget {
+  return { pathname: '/listing/[id]', params: { id: String(id ?? '') } };
+}
