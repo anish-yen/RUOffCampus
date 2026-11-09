@@ -12,6 +12,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.anishyen.subletfinder",
       "buildNumber": "1",
+      "associatedDomains": [
+        "applinks:ruoffcampus.vercel.app"
+      ],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -26,7 +29,24 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anishyen.subletfinder",
-      "versionCode": 1
+      "versionCode": 1,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "ruoffcampus.vercel.app",
+              "pathPrefix": "/listings"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "output": "static",
