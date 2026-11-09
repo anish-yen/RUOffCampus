@@ -16,7 +16,7 @@ import { useAppData } from '@/src/context/app-context';
 
 export default function ListingsScreen() {
   const router = useRouter();
-  const { listings, loading, usingFallback, favoriteIds, toggleFavorite, refreshListings, authMessage, canWriteListings } =
+  const { listings, loading, loadError, favoriteIds, toggleFavorite, refreshListings, authMessage, canWriteListings } =
     useAppData();
 
   useEffect(() => {
@@ -48,8 +48,17 @@ export default function ListingsScreen() {
             ) : null}
           </View>
 
-          {usingFallback ? (
-            <Text style={styles.warning}>Showing fallback data. Check backend connection.</Text>
+          {loadError ? (
+            <View style={styles.warning}>
+              <Text style={styles.warningText}>Couldn&rsquo;t load listings. Check your connection and try again.</Text>
+              <Pressable
+                onPress={() => {
+                  void refreshListings();
+                }}
+                hitSlop={8}>
+                <Text style={styles.retryText}>Retry</Text>
+              </Pressable>
+            </View>
           ) : null}
           {authMessage ? <Text style={styles.warning}>{authMessage}</Text> : null}
 
@@ -115,11 +124,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff7ed',
     borderColor: '#fdba74',
     borderWidth: 1,
-    color: '#9a3412',
     borderRadius: 12,
     padding: 10,
     marginBottom: 4,
   },
+  warningText: { color: '#9a3412' },
+  retryText: { color: '#cc0033', fontWeight: '700', marginTop: 6 },
   card: { borderRadius: 16, backgroundColor: '#fff', overflow: 'hidden' },
   cover: { height: 180, width: '100%', backgroundColor: '#e2e8f0' },
   cardBody: { padding: 12, gap: 4 },
