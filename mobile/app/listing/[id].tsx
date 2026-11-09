@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Alert, Image, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 
@@ -8,14 +8,38 @@ import { shareListingLink } from '@/src/utils/share';
 export default function ListingDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { listings, isFavorited, toggleFavorite, deleteListing, userId, canWriteListings } = useAppData();
+  const { listings, loading, isFavorited, toggleFavorite, deleteListing, userId, canWriteListings, refreshListings } = useAppData();
   const listing = listings.find((item) => item.id === id);
   const [shareFallbackUrl, setShareFallbackUrl] = useState<string | null>(null);
+  const [requestedListing, setRequestedListing] = useState(false);
+
+  // Cold deep links can land here before the index tab ever mounted and
+  // triggered the first listings fetch - make sure the data loads.
+  useEffect(() => {
+    if (!listing && !requestedListing) {
+      setRequestedListing(true);
+      void refreshListings();
+    }
+  }, [listing, requestedListing, refreshListings]);
 
   if (!listing) {
+    if (loading) {
+      return (
+        <View style={styles.centered}>
+          <Text style={styles.meta}>Loading listing...</Text>
+        </View>
+      );
+    }
     return (
       <View style={styles.centered}>
         <Text style={styles.title}>Listing not found</Text>
+        <Pressable
+          onPress={() => {
+            void refreshListings();
+          }}
+          style={styles.sharePill}>
+          <Text style={styles.shareText}>Retry</Text>
+        </Pressable>
       </View>
     );
   }
