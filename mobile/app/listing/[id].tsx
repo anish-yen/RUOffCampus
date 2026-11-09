@@ -1,14 +1,16 @@
+import { useState } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Alert, Image, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 
 import { useAppData } from '@/src/context/app-context';
-import { buildListingShareMessage, buildListingShareUrl } from '@/src/utils/share';
+import { shareListingLink } from '@/src/utils/share';
 
 export default function ListingDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { listings, isFavorited, toggleFavorite, deleteListing, userId, canWriteListings } = useAppData();
   const listing = listings.find((item) => item.id === id);
+  const [shareFallbackUrl, setShareFallbackUrl] = useState<string | null>(null);
 
   if (!listing) {
     return (
@@ -22,11 +24,8 @@ export default function ListingDetailScreen() {
   const canDelete = Boolean(canWriteListings && userId && listing.host_id && listing.host_id === userId);
 
   const onShare = async () => {
-    try {
-      await Share.share({ message: buildListingShareMessage(listing) });
-    } catch {
-      Alert.alert('Share link', buildListingShareUrl(listing.id));
-    }
+    const result = await shareListingLink(listing, (content) => Share.share(content));
+    setShareFallbackUrl(result.shared ? null : result.fallbackUrl);
   };
 
   return (
@@ -54,6 +53,9 @@ export default function ListingDetailScreen() {
             </Pressable>
           </View>
         </View>
+        {shareFallbackUrl ? (
+          <Text style={styles.shareFallback} selectable>{shareFallbackUrl}</Text>
+        ) : null}
 
         <Text style={styles.price}>${listing.price}/month</Text>
         <Text style={styles.meta}>{listing.beds} bed • {listing.propertyType} • {listing.distance} mi</Text>
@@ -119,6 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   shareText: { color: '#64748b', fontWeight: '700' },
+  shareFallback: { marginTop: 8, fontSize: 13, color: '#64748b' },
   deleteButton: {
     marginTop: 12,
     borderWidth: 1,
