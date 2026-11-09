@@ -1,7 +1,8 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 
 import { useAppData } from '@/src/context/app-context';
+import { buildListingShareMessage, buildListingShareUrl } from '@/src/utils/share';
 
 export default function ListingDetailScreen() {
   const router = useRouter();
@@ -20,6 +21,14 @@ export default function ListingDetailScreen() {
   const favorite = isFavorited(listing.id);
   const canDelete = Boolean(canWriteListings && userId && listing.host_id && listing.host_id === userId);
 
+  const onShare = async () => {
+    try {
+      await Share.share({ message: buildListingShareMessage(listing) });
+    } catch {
+      Alert.alert('Share link', buildListingShareUrl(listing.id));
+    }
+  };
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Image
@@ -30,13 +39,20 @@ export default function ListingDetailScreen() {
       <View style={styles.card}>
         <View style={styles.rowBetween}>
           <Text style={styles.title}>{listing.title}</Text>
-          <Pressable
-            onPress={() => {
-              void toggleFavorite(listing.id);
-            }}
-            style={styles.favoritePill}>
-            <Text style={favorite ? styles.favoriteOn : styles.favoriteOff}>{favorite ? '♥ Saved' : '♡ Save'}</Text>
-          </Pressable>
+          <View style={styles.actionsRow}>
+            <Pressable
+              onPress={() => {
+                void toggleFavorite(listing.id);
+              }}
+              style={styles.favoritePill}>
+              <Text style={favorite ? styles.favoriteOn : styles.favoriteOff}>{favorite ? '♥ Saved' : '♡ Save'}</Text>
+            </Pressable>
+            <Pressable onPress={() => {
+              void onShare();
+            }} style={styles.sharePill}>
+              <Text style={styles.shareText}>Share</Text>
+            </Pressable>
+          </View>
         </View>
 
         <Text style={styles.price}>${listing.price}/month</Text>
@@ -83,6 +99,7 @@ const styles = StyleSheet.create({
   meta: { fontSize: 14, color: '#475569' },
   sectionTitle: { marginTop: 8, fontSize: 16, fontWeight: '700', color: '#0f172a' },
   description: { color: '#334155', lineHeight: 21 },
+  actionsRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   favoritePill: {
     borderWidth: 1,
     borderColor: '#e2e8f0',
@@ -93,6 +110,15 @@ const styles = StyleSheet.create({
   },
   favoriteOn: { color: '#cc0033', fontWeight: '700' },
   favoriteOff: { color: '#64748b', fontWeight: '700' },
+  sharePill: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
+  },
+  shareText: { color: '#64748b', fontWeight: '700' },
   deleteButton: {
     marginTop: 12,
     borderWidth: 1,
